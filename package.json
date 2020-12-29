@@ -1,0 +1,33 @@
+{
+  "name": "rpi-poweroff",
+  "version": "1.0.0",
+  "description": "Raspberry Pi poweroff via button or http",
+  "main": "run.js",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-basic-auth": "^1.2.0",
+    "onoff": "^6.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/13/node-rpi-poweroff.git"
+  },
+  "keywords": [
+    "rasbperry",
+    "pi",
+    "gpio",
+    "poweroff",
+    "button"
+  ],
+  "author": "ben",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/13/node-rpi-poweroff/issues"
+  },
+  "homepage": "https://github.com/13/node-rpi-poweroff#readme"
+}

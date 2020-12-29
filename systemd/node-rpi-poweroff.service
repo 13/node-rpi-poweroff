@@ -1,0 +1,16 @@
+[Unit]
+Description=node-rpi-poweroff
+
+[Service]
+Type=simple
+User=ben
+ExecStart=/usr/bin/node /home/ben/repo/node-rpi-poweroff/run.js
+Restart=always
+RestartSec=30
+# Output to syslog
+#StandardOutput=syslog
+#StandardError=syslog
+SyslogIdentifier=node-rpi-poweroff
+
+[Install]
+WantedBy=multi-user.target
