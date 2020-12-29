@@ -4,7 +4,7 @@ Description=node-rpi-poweroff
 [Service]
 Type=simple
 User=ben
-WorkingDirectory=/home/ben/repo/node-poweroff
+WorkingDirectory=/home/ben/repo/node-rpi-poweroff
 ExecStart=/usr/bin/node /home/ben/repo/node-rpi-poweroff/run.js
 Restart=always
 RestartSec=30
