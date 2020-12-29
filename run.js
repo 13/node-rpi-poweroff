@@ -22,7 +22,7 @@ function execute(command, callback){
 }
 
 function execute(command, callback){
-	  exec(command, function(error, stdout, stderr){ callback(stdout) })
+ exec(command, function(error, stdout, stderr){ callback(stdout) })
 }
 
 app.use(basicAuth({
@@ -57,8 +57,8 @@ button.watch((err, value) => {
     throw err
   }
   console.log('powerbutton shutdown')
-  shutdown(function(output){
-    console.log(output)
+  execute('sudo systemctl poweroff', function(callback){
+    console.log(callback)
   })
 })
  
