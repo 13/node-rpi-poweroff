@@ -9,11 +9,28 @@
     <title>node-poweroff</title>
   </head>
   <body>
-    <div class="d-grid gap-2 col-4 mx-auto mt-3">
-      <a href="/poweroff" class="btn btn-sm btn-danger" role="button">Poweroff</a>
-      <a href="/reboot" class="btn btn-sm btn-secondary" role="button">Reboot</a>
+    <div class="d-grid gap-2 col-4 mx-auto mt-3 text-center">
+      <div id="res" class="my-3 h1 bg-light border rounded">...</div>
+      <a href="/poweroff" id="pwrff" class="btn btn-lg btn-danger" role="button">Poweroff</a>
+      <a href="/reboot" id="rbt" class="btn btn-lg btn-secondary" role="button">Reboot</a>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj" crossorigin="anonymous"></script>
+    <script>
+      var urlName = location.protocol + '//' + location.hostname + ':' + window.location.port;
+      var actionName = location.pathname.split("/").slice(-1); 
+      if (actionName == 'poweroff' || actionName == 'reboot'){
+        document.getElementById("res").innerHTML = actionName;
+        document.getElementById("pwrff").className += " disabled";
+	      document.getElementById("pwrff").setAttribute('tabindex', -1);
+	      document.getElementById("pwrff").setAttribute('aria-disabled', true);
+	      document.getElementById("rbt").className += " disabled";
+	      document.getElementById("rbt").setAttribute('tabindex', -1);
+	      document.getElementById("rbt").setAttribute('aria-disabled', true);
+	      setTimeout(function(){
+       	  location.href = urlName;
+	      }, 20000);
+      }
+    </script>  
   </body>
 </html>
 
