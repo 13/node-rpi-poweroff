@@ -14,6 +14,7 @@
       <div id="res" class="my-3 h1 bg-light border rounded">...</div>
       <a href="/poweroff" onclick="doCmd(event,'poweroff')" id="pwrff" class="btn btn-lg btn-danger" role="button">Poweroff</a>
       <a href="/reboot" onclick="doCmd(event,'reboot')" id="rbt" class="btn btn-lg btn-secondary" role="button">Reboot</a>
+      <div id="shelly" class="my-3 h1 bg-light border rounded">...</div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha256-cMPWkL3FzjuaFSfEYESYmjF25hCIL6mfRSPnW8OVvM4=" crossorigin="anonymous"></script>
     <script>
@@ -63,6 +64,29 @@
       goCheckState();
       setInterval(goCheckState, 5000);
     </script>
+    <script>
+      // check online state of shelly
+      async function checkStateShelly() {
+	//http://192.168.22.178/relay/0?turn=off
+        let response = await fetch('http://192.168.22.178/relay/0');
+        if (response.status === 200) {
+            let data = await response.text();
+            // handle data
+            document.getElementById("shelly").innerHTML = 'shelly online';
+	} else {
+            document.getElementById("shelly").innerHTML = 'shelly offline';
+	}
+      }
+      function goCheckStateShelly() {
+        checkStateShelly()
+            .then((res) => { console.log('shelly online') })
+	    .catch(function(err) {  
+	      console.log('shelly offline');
+            });
+      }
+      goCheckStateShelly();
+      setInterval(goCheckStateShelly, 5000);
+    </script>	  
   </body>
 </html>
 
