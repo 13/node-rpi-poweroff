@@ -2,8 +2,8 @@
 
 require('dotenv').config()
 
-const username = process.env.USER
-const password = process.env.PASS
+const username = process.env.HTTP_USER
+const password = process.env.HTTP_PASS
 const users = {};
 users[username] = password;
 
@@ -11,6 +11,7 @@ const express = require('express')
 const app = express()
 const path = require('path')
 const basicAuth = require('express-basic-auth')
+const cors = require('cors')
 
 const exec = require('child_process').exec
 const Gpio = require('onoff').Gpio
@@ -25,15 +26,27 @@ function execute(command, callback){
  exec(command, function(error, stdout, stderr){ callback(stdout) })
 }
 
+//app.use(cors({origin: '*'}));
+app.use(cors({origin: false}));
+//app.use(cors());
+
+/*app.use(function (req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();}
+);*/
+
 app.use(basicAuth({
-  users: { 'process.env.USER': 'process.env.PASS' },
+  //users: { 'process.env.HTTP_USER': 'process.env.HTTP_PASS' },
   users,
   challenge: true,
   unauthorizedResponse: 'Unauthorized'
 }))
 
 app.get('/', function (req, res) {
-  res.sendFile(path.join(__dirname+'/static/index.html'))
+  res.sendFile(path.join(__dirname+'/public/index.html'))
 })
 
 app.get('/poweroff', function (req, res) {

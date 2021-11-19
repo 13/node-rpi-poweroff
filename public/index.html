@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" integrity="sha256-YvdLHPgkqJ8DVUxjjnGVlMMJtNimJ6dYkowFFvp4kKs=" crossorigin="anonymous">
+    <link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,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" />
+    <title>node-rpi-poweroff</title>
+  </head>
+  <body>
+    <div class="d-grid gap-2 col-10 col-lg-4 mx-auto text-center">
+      <div id="hostname" class="my-2 h1">octopi</div>
+      <div id="stream" class="my-0 py-0">
+        <img src="http://192.168.22.19/webcam/?action=snapshot" class="rounded mx-auto d-block img-fluid" />
+      </div>
+      <!--<div id="res" class="my-0 h2 bg-light border rounded">...</div>-->
+      <button type="button" id="res" class="btn" disabled>...</button>
+      <div class="d-grid gap-2 col d-md-block text-nowrap">
+          <a href="/poweroff" onclick="doCmd(event,'poweroff')" id="pwrff" class="btn btn-primary col-md-6" role="button">Poweroff</a>
+          <a href="/reboot" onclick="doCmd(event,'reboot')" id="rbt" class="btn btn-secondary col-md-6" role="button">Reboot</a>
+      </div>
+      <!--</div>-->
+      <div id="shelly" class="my-3 h2 bg-light border rounded">...</div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha256-cMPWkL3FzjuaFSfEYESYmjF25hCIL6mfRSPnW8OVvM4=" crossorigin="anonymous"></script>
+    <script>
+      var urlName = location.protocol + '//' + location.hostname + ':' + window.location.port;
+      var actionName = location.pathname.split("/").slice(-1); 
+      if (actionName == 'poweroff' || actionName == 'reboot'){
+        document.getElementById("res").innerHTML = actionName;
+        document.getElementById("pwrff").className += " disabled";
+	document.getElementById("pwrff").setAttribute('tabindex', -1);
+	document.getElementById("pwrff").setAttribute('aria-disabled', true);
+	document.getElementById("rbt").className += " disabled";
+	document.getElementById("rbt").setAttribute('tabindex', -1);
+	document.getElementById("rbt").setAttribute('aria-disabled', true);
+	Array.from(document.querySelectorAll('#res.btn-outline-success')).forEach((el) => el.classList.remove('btn-outline-success'));
+        document.getElementById("res").className += " btn-outline-danger";
+	setTimeout(function(){
+       	  location.href = urlName;
+	}, 20000);
+      }
+    </script>  
+    <script>
+      // run command reboot or shutdown
+      async function doCmd(ev, cmd) {
+	console.log(cmd);
+        document.getElementById("res").innerHTML = cmd;
+	ev.preventDefault();
+        let response = await fetch("/" + cmd);
+      }
+    </script>
+    <script>
+      // check online state of localhost
+      async function checkState() {
+        let response = await fetch('/');
+        if (response.status === 200) {
+            let data = await response.text();
+            document.getElementById("res").innerHTML = 'online';
+	    Array.from(document.querySelectorAll('#res.btn-outline-danger')).forEach((el) => el.classList.remove('btn-outline-danger'));
+            document.getElementById("res").className += " btn-outline-success";
+	} else {
+            document.getElementById("res").innerHTML = 'offline';
+	    Array.from(document.querySelectorAll('#res.btn-outline-success')).forEach((el) => el.classList.remove('btn-outline-success'));
+            document.getElementById("res").className += " btn-outline-danger";
+	}
+      }
+      function goCheckState() {
+        checkState()
+            .then((res) => { 
+	      console.log('online')
+              document.getElementById("res").innerHTML = 'online';
+	      Array.from(document.querySelectorAll('#res.btn-outline-danger')).forEach((el) => el.classList.remove('btn-outline-danger'));
+              document.getElementById("res").className += " btn-outline-success";
+	    })
+	    .catch(function(err) {  
+	      console.log('offline');
+              document.getElementById("res").innerHTML = 'offline';
+	      Array.from(document.querySelectorAll('#res.btn-outline-success')).forEach((el) => el.classList.remove('btn-outline-success'));
+              document.getElementById("res").className += " btn-outline-danger";
+            });
+      }
+      goCheckState();
+      setInterval(goCheckState, 10000);
+    </script>
+    <script>
+      // check online state of shelly
+	//http://192.168.22.178/relay/0?turn=off
+        //let response = await fetch('http://192.168.22.178/relay/0');
+    </script>	  
+  </body>
+</html>
+
