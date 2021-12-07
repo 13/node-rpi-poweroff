@@ -11,18 +11,32 @@
   </head>
   <body>
     <div class="d-grid gap-2 col-10 col-lg-4 mx-auto text-center">
-      <div id="hostname" class="my-2 h1">octopi</div>
+      <div id="hostname" class="my-2 h1"></div>
       <div id="stream" class="my-0 py-0">
-        <img src="http://192.168.22.19/webcam/?action=snapshot" class="rounded mx-auto d-block img-fluid" />
+	<!--<img src="http://192.168.22.19/webcam/?action=stream" class="rounded mx-auto d-block img-fluid" />-->
+	<img src="http://192.168.22.19/webcam/?action=snapshot" class="rounded mx-auto d-block img-fluid" />
       </div>
-      <!--<div id="res" class="my-0 h2 bg-light border rounded">...</div>-->
-      <button type="button" id="res" class="btn" disabled>...</button>
-      <div class="d-grid gap-2 col d-md-block text-nowrap">
+      <div id="res" class="alert my-0 p-1 text-uppercase" >...</div>
+      <!--<div class="d-grid gap-2 col d-md-block text-nowrap">-->
+      <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+	<div class="btn-group pe-1 w-50" role="group" aria-label="First group">
           <a href="/poweroff" onclick="doCmd(event,'poweroff')" id="pwrff" class="btn btn-primary col-md-6" role="button">Poweroff</a>
+	</div>
+	<div class="btn-group ps-1 w-50" role="group" aria-label="First group">
           <a href="/reboot" onclick="doCmd(event,'reboot')" id="rbt" class="btn btn-secondary col-md-6" role="button">Reboot</a>
+	</div>
       </div>
       <!--</div>-->
-      <div id="shelly" class="my-3 h2 bg-light border rounded">...</div>
+      <div class="btn-toolbar border border-1 border-secondary rounded bg-secondary bg-opacity-75" role="toolbar" aria-label="Toolbar with button groups">
+	<div class="btn-group pe-1 w-50 text-center" role="group" aria-label="Sec group">
+	  <span id="shelly-watt">n/a</span>
+	</div>
+	<div class="btn-group ps-1 w-50 text-right" role="group" aria-label="Sec group">
+          <div class="form-switch">
+	    <input class="form-check-input" type="checkbox" id="shelly-state" onclick="setShelly()">
+          </div>
+	</div>
+      </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha256-cMPWkL3FzjuaFSfEYESYmjF25hCIL6mfRSPnW8OVvM4=" crossorigin="anonymous"></script>
     <script>
@@ -36,8 +50,10 @@
 	document.getElementById("rbt").className += " disabled";
 	document.getElementById("rbt").setAttribute('tabindex', -1);
 	document.getElementById("rbt").setAttribute('aria-disabled', true);
-	Array.from(document.querySelectorAll('#res.btn-outline-success')).forEach((el) => el.classList.remove('btn-outline-success'));
-        document.getElementById("res").className += " btn-outline-danger";
+
+	Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
+	Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
+        document.getElementById("res").className += " alert-danger";
 	setTimeout(function(){
        	  location.href = urlName;
 	}, 20000);
@@ -59,12 +75,14 @@
         if (response.status === 200) {
             let data = await response.text();
             document.getElementById("res").innerHTML = 'online';
-	    Array.from(document.querySelectorAll('#res.btn-outline-danger')).forEach((el) => el.classList.remove('btn-outline-danger'));
-            document.getElementById("res").className += " btn-outline-success";
+	    Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
+	    Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
+            document.getElementById("res").className += " alert-success";
 	} else {
             document.getElementById("res").innerHTML = 'offline';
-	    Array.from(document.querySelectorAll('#res.btn-outline-success')).forEach((el) => el.classList.remove('btn-outline-success'));
-            document.getElementById("res").className += " btn-outline-danger";
+	    Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
+	    Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
+            document.getElementById("res").className += " alert-danger";
 	}
       }
       function goCheckState() {
@@ -72,21 +90,94 @@
             .then((res) => { 
 	      console.log('online')
               document.getElementById("res").innerHTML = 'online';
-	      Array.from(document.querySelectorAll('#res.btn-outline-danger')).forEach((el) => el.classList.remove('btn-outline-danger'));
-              document.getElementById("res").className += " btn-outline-success";
+	      Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
+	      Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
+              document.getElementById("res").className += " alert-success";
 	    })
 	    .catch(function(err) {  
 	      console.log('offline');
               document.getElementById("res").innerHTML = 'offline';
-	      Array.from(document.querySelectorAll('#res.btn-outline-success')).forEach((el) => el.classList.remove('btn-outline-success'));
-              document.getElementById("res").className += " btn-outline-danger";
+	      Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
+	      Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
+              document.getElementById("res").className += " alert-danger";
             });
       }
       goCheckState();
       setInterval(goCheckState, 10000);
     </script>
+    <script src="https://unpkg.com/mqtt@4.2.8/dist/mqtt.min.js"></script>
     <script>
-      // check online state of shelly
+      // shelly
+      var client = mqtt.connect('ws://192.168.22.9:1884')
+      var subscr = 'shellies/shellyplug-s-C13431'
+
+      function getShelly() {
+	//var client = mqtt.connect('ws://192.168.22.9:1884')
+	//var subscr = 'shellies/shellyplug-s-C13431'
+	// /0,/0/power
+	client.subscribe(subscr + '/#')
+
+	client.on('connect', function () {
+	  console.log('MQTT: connected ...')
+	})
+
+	client.on('disconnect', function () {
+	   console.log('MQTT: disconnected ...')
+	})
+
+	client.on("message", function (topic, payload) {
+	  if (topic === subscr + '/relay/0') {
+	    console.log('Status: ' + payload)
+	    if (payload == 'on'){
+	      document.getElementById("shelly-state").checked = true;
+	    } else {
+	      document.getElementById("shelly-state").checked = false;
+	   }
+	  }
+	  if (topic === subscr + '/relay/0/power') {
+	    console.log('Power: ' + payload)
+            document.getElementById("shelly-watt").innerHTML = payload + 'W';
+	  }
+	  //client.end()
+	})
+	// on,off,toggle
+	//client.publish(subscr + 'relay/0/command', 'on')
+         
+      }
+      getShelly();
+
+      function setShelly() {
+        var checkBox = document.getElementById('shelly-state');
+	client.publish(subscr + '/relay/0/command', 'toggle')
+	/*if (checkBox.checked == true){
+	  console.log('Shelly: Turn off')
+	  client.publish(subscr + '/relay/0/command', 'off')
+  	} else {
+	  console.log('Shelly: Turn on')
+	  client.publish(subscr + '/relay/0/command', 'on')
+	}*/
+      }
+
+      // hostname
+      async function loadNames() {
+	const response = await fetch('/hostname');
+        const names = await response.json();
+        console.log(names); 
+        document.title = names.hostname;
+        document.getElementById("hostname").innerHTML = names.hostname;
+        // logs [{ name: 'Joker'}, { name: 'Batman' }]
+      }
+      loadNames();
+
+      async function loadOctoJob() {
+         const response = await fetch('http://192.168.22.19/api/job?apikey=550F9D415E154377BAECB411C2E0B815');
+	 const job = await response.json();
+	 console.log(job); 
+	 document.getElementByClass("progess-bar").setAttribute('aria-valuenow', job.progress.completion);
+	 // logs [{ name: 'Joker'}, { name: 'Batman' }]
+       }
+       loadOctoJob();
+        // check online state of shelly
 	//http://192.168.22.178/relay/0?turn=off
         //let response = await fetch('http://192.168.22.178/relay/0');
     </script>	  
