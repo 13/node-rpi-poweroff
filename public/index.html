@@ -50,7 +50,7 @@
         <div class="container">
 	  <div class="row">
 	    <div class="col">
-	      <div class="progress" style="height: 20px;">
+	      <div class="progress my-3 mx-sm-5" style="height: 24px;">
 	        <div id="op-perc" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 	      </div>
 	    </div>
@@ -60,23 +60,23 @@
 	    <div class="col" id="op-state">n/a</div>
 	  </div>
 	  <div class="row">
-	    <div class="col">PT:</div>
-	    <div class="col" id="op-pt">n/a</div>
-	  </div>
-	  <div class="row">
 	    <div class="col">PTL:</div>
 	    <div class="col" id="op-ptl">n/a</div>
 	  </div>
 	  <div class="row">
+	    <div class="col">PT:</div>
+	    <div class="col" id="op-pt">n/a</div>
+	  </div>
+	  <div class="row">
 	    <div class="col">Tool:</div>
 	    <div class="col">
-	      <span id="op-tool"></span> / <span id="op-toolt"></span>
+	      <span id="op-tool"></span>&deg; / <span id="op-toolt"></span>&deg;
 	    </div>
 	  </div>
 	  <div class="row">
 	    <div class="col">Bed:</div>
 	    <div class="col">
-	      <span id="op-bed"></span> / <span id="op-bedt"></span>
+	      <span id="op-bed"></span>&deg; / <span id="op-bedt"></span>&deg;
 	    </div>
 	  </div>
         </div>
@@ -233,7 +233,6 @@
         const response = await fetch('http://192.168.22.19/api/job?apikey=550F9D415E154377BAECB411C2E0B815');
 	const job = await response.json();
 	//console.log(job); 
-	//console.log(job.progress.completion); 
 	dayjs.extend(window.dayjs_plugin_duration);
 	//console.log(dayjs.duration(60, 's').format('HH:mm:ss'));
         document.getElementById("op-state").innerHTML = job.state;
