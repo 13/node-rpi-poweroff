@@ -49,12 +49,15 @@
         </div>
         <div class="container">
 	  <div class="row">
-	    <div class="col">State:</div>
-	    <div class="col" id="op-state">n/a</div>
+	    <div class="col">
+	      <div class="progress" style="height: 20px;">
+	        <div id="op-perc" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+	      </div>
+	    </div>
 	  </div>
 	  <div class="row">
-	    <div class="col">TPT:</div>
-	    <div class="col" id="op-tpt">n/a</div>
+	    <div class="col">State:</div>
+	    <div class="col" id="op-state">n/a</div>
 	  </div>
 	  <div class="row">
 	    <div class="col">PT:</div>
@@ -65,17 +68,16 @@
 	    <div class="col" id="op-ptl">n/a</div>
 	  </div>
 	  <div class="row">
+	    <div class="col">Tool:</div>
 	    <div class="col">
-	      <div class="progress">
-	        <div id="op-perc" class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-	      </div>
+	      <span id="op-tool"></span> / <span id="op-toolt"></span>
 	    </div>
 	  </div>
 	  <div class="row">
-	    <div class="col">Tool:</div>
-	    <div class="col" id="op-tool">n/a</div>
 	    <div class="col">Bed:</div>
-	    <div class="col" id="op-bed">n/a</div>
+	    <div class="col">
+	      <span id="op-bed"></span> / <span id="op-bedt"></span>
+	    </div>
 	  </div>
         </div>
       </div>
@@ -228,28 +230,37 @@
       }
 
       async function loadOctoJob() {
-         const response = await fetch('http://192.168.22.19/api/job?apikey=550F9D415E154377BAECB411C2E0B815');
-	 const job = await response.json();
-	 console.log(job); 
-	 //console.log(job.progress.completion); 
-	 dayjs.extend(window.dayjs_plugin_duration);
-	 //console.log(dayjs.duration(60, 's').format('HH:mm:ss'));
-         document.getElementById("op-state").innerHTML = job.state;
-         document.getElementById("op-perc").innerHTML = (job.progress.completion == null ? '0' : job.progress.completion) + '%';
-         document.getElementById("op-perc").style.width = (job.progress.completion == null ? '0' : job.progress.completion) + '%';
+        const response = await fetch('http://192.168.22.19/api/job?apikey=550F9D415E154377BAECB411C2E0B815');
+	const job = await response.json();
+	//console.log(job); 
+	//console.log(job.progress.completion); 
+	dayjs.extend(window.dayjs_plugin_duration);
+	//console.log(dayjs.duration(60, 's').format('HH:mm:ss'));
+        document.getElementById("op-state").innerHTML = job.state;
+        document.getElementById("op-perc").innerHTML = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
+        document.getElementById("op-perc").style.width = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
+        document.getElementById("op-perc").setAttribute('aria-valuenow',job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10);
+        document.getElementById("op-pt").innerHTML = dayjs.duration(job.progress.printTime, 's').format('HH:mm:ss');
+        document.getElementById("op-ptl").innerHTML = dayjs.duration(job.progress.printTimeLeft, 's').format('HH:mm:ss');
+      }
+      loadOctoJob();
+      setInterval(loadOctoJob, 10000);
 
-         document.getElementById("op-pt").innerHTML = dayjs.duration(job.progress.printTime, 's').format('HH:mm:ss');
-         document.getElementById("op-ptl").innerHTML = dayjs.duration(job.progress.printTimeLeft, 's').format('HH:mm:ss');
-         document.getElementById("op-tpt").innerHTML = dayjs.duration(job.progress.printTimeOrigin, 's').format('HH:mm:ss');
-	 //console.log(dayjs.duration(job.progress.printTime, 'm')); 
-	 //console.log(dayjs().format(job.progress.printTimeLeft)); 
-	 //document.getElementByClass("progess-bar").setAttribute('aria-valuenow', job.progress.completion);
-	 // logs [{ name: 'Joker'}, { name: 'Batman' }]
-       }
-       loadOctoJob();
-        // check online state of shelly
-	//http://192.168.22.178/relay/0?turn=off
-        //let response = await fetch('http://192.168.22.178/relay/0');
+      async function loadOctoPrinter() {
+        const response = await fetch('http://192.168.22.19/api/printer?apikey=550F9D415E154377BAECB411C2E0B815');
+	const printer = await response.json();
+	//console.log(printer); 
+        document.getElementById("op-bed").innerHTML = printer.temperature.bed.actual;
+        document.getElementById("op-tool").innerHTML = printer.temperature.tool0.actual;
+        document.getElementById("op-bedt").innerHTML = printer.temperature.bed.target;
+        document.getElementById("op-toolt").innerHTML = printer.temperature.tool0.target;
+      }
+      loadOctoPrinter();
+      setInterval(loadOctoPrinter, 10000);
+    </script>	  
+  </body>
+</html>
+
     </script>	  
   </body>
 </html>
