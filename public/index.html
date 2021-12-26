@@ -11,8 +11,12 @@
   </head>
   <body>
     <div class="d-grid gap-2 col-10 col-lg-4 mx-auto text-center">
-      <div id="hostname" class="my-2 h1"></div>
-      <div id="res" class="alert my-0 p-1 text-uppercase" >...</div>
+      <div id="res" class="alert text-uppercase mt-3 mb-1" >
+        <h4 class="alert-heading m-0" >
+      	  <span id="hostname"></span>
+    	  <span id="res-status"></span>
+         </h4>
+       </div>
       <!--<div class="d-grid gap-2 col d-md-block text-nowrap">-->
       <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
 	<div class="btn-group pe-1 w-50" role="group" aria-label="First group">
@@ -47,10 +51,11 @@
 	    </div>
 	  </a>
         </div>
-        <div class="container">
+      </div>
+      <div class="container">
 	  <div class="row">
 	    <div class="col">
-	      <div class="progress my-3 mx-sm-5" style="height: 24px;">
+	      <div id="pbar" class="progress my-3 mx-sm-5" style="height: 24px;">
 	        <div id="op-perc" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 	      </div>
 	    </div>
@@ -79,7 +84,6 @@
 	      <span id="op-bed"></span>&deg; / <span id="op-bedt"></span>&deg;
 	    </div>
 	  </div>
-        </div>
       </div>
 
     </div>
@@ -90,7 +94,7 @@
       var urlName = location.protocol + '//' + location.hostname + ':' + window.location.port;
       var actionName = location.pathname.split("/").slice(-1); 
       if (actionName == 'poweroff' || actionName == 'reboot'){
-        document.getElementById("res").innerHTML = actionName;
+        document.getElementById("res-status").innerHTML = actionName;
         document.getElementById("pwrff").className += " disabled";
 	document.getElementById("pwrff").setAttribute('tabindex', -1);
 	document.getElementById("pwrff").setAttribute('aria-disabled', true);
@@ -110,7 +114,7 @@
       // run command reboot or shutdown
       async function doCmd(ev, cmd) {
 	//console.log(cmd);
-        document.getElementById("res").innerHTML = cmd;
+        document.getElementById("res-status").innerHTML = cmd;
 	ev.preventDefault();
         let response = await fetch("/" + cmd);
       }
@@ -121,12 +125,12 @@
         let response = await fetch('/');
         if (response.status === 200) {
             let data = await response.text();
-            document.getElementById("res").innerHTML = 'online';
+            document.getElementById("res-status").innerHTML = 'online';
 	    Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
 	    Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
             document.getElementById("res").className += " alert-success";
 	} else {
-            document.getElementById("res").innerHTML = 'offline';
+            document.getElementById("res-status").innerHTML = 'offline';
 	    Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
 	    Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
             document.getElementById("res").className += " alert-danger";
@@ -136,7 +140,7 @@
         checkState()
             .then((res) => { 
 	      //console.log('online')
-              document.getElementById("res").innerHTML = 'online';
+              document.getElementById("res-status").innerHTML = 'online';
 	      Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
 	      Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
               document.getElementById("res").className += " alert-success";
