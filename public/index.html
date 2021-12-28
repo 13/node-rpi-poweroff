@@ -54,6 +54,9 @@
       </div>
       <div class="container">
 	  <div class="row">
+	    <div class="col" id="op-filename">n/a</div>
+	  </div>
+	  <div class="row">
 	    <div class="col">
 	      <div id="pbar" class="progress my-3 mx-sm-5" style="height: 24px;">
 	        <div id="op-perc" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -71,6 +74,12 @@
 	  <div class="row">
 	    <div class="col">PT:</div>
 	    <div class="col" id="op-pt">n/a</div>
+	  </div>
+	  <div class="row">
+	    <div class="col">Size:</div>
+	    <div class="col">
+	      <span id="op-filepos"></span> / <span id="op-filesize"></span>
+	    </div>
 	  </div>
 	  <div class="row">
 	    <div class="col">Tool:</div>
@@ -167,11 +176,11 @@
 	client.subscribe(subscr + '/#')
 
 	client.on('connect', function () {
-	  console.log('MQTT: connected ...')
+	  //console.log('MQTT: connected ...')
 	})
 
 	client.on('disconnect', function () {
-	   console.log('MQTT: disconnected ...')
+	   //console.log('MQTT: disconnected ...')
 	})
 
 	client.on("message", function (topic, payload) {
@@ -233,12 +242,24 @@
 	}
       }
 
+      // helper function
+      function bytesToSize(bytes) {
+	const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+	if (bytes === 0) return 'n/a';
+	const i = parseInt(Math.floor(Math.log(Math.abs(bytes)) / Math.log(1024)), 10);
+	if (i === 0) return `${bytes}${sizes[i]}`;
+        return `${(bytes / (1024 ** i)).toFixed(1)}${sizes[i]}`;
+      }
+
       async function loadOctoJob() {
         const response = await fetch('http://192.168.22.19/api/job?apikey=550F9D415E154377BAECB411C2E0B815');
 	const job = await response.json();
 	//console.log(job); 
 	dayjs.extend(window.dayjs_plugin_duration);
 	//console.log(dayjs.duration(60, 's').format('HH:mm:ss'));
+        document.getElementById("op-filename").innerHTML = job.job.file.name;
+        document.getElementById("op-filesize").innerHTML = bytesToSize(job.job.file.size);
+        document.getElementById("op-filepos").innerHTML = bytesToSize(job.progress.filepos);
         document.getElementById("op-state").innerHTML = job.state;
         document.getElementById("op-perc").innerHTML = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
         document.getElementById("op-perc").style.width = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
@@ -263,8 +284,3 @@
     </script>	  
   </body>
 </html>
-
-    </script>	  
-  </body>
-</html>
-
