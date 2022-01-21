@@ -2,8 +2,13 @@
 
 require('dotenv').config()
 
-const username = process.env.HTTP_USER
-const password = process.env.HTTP_PASS
+const username = process.env.HTTP_USER || 'admin'
+const password = process.env.HTTP_PASS || 'password'
+const port = process.env.HTTP_PORT || '1337'
+const octoprint_ip = process.env.OCTOPRINT_SERVER
+const octoprint_token = process.env.OCTOPRINT_TOKEN
+const mqtt_ip = process.env.MQTT_SERVER
+const shelly_device = process.env.SHELLY_DEVICE
 const users = {};
 users[username] = password;
 
@@ -39,13 +44,9 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname+'/public/index.html'))
 })
 
-app.get('/test.html', function (req, res) {
-  res.sendFile(path.join(__dirname+'/public/test.html'))
-})
-
-app.get('/hostname', function (req, res) {
-  console.log('hostname')
-  res.send(JSON.stringify({hostname: hostname}))
+app.get('/api', function (req, res) {
+  console.log('api')
+  res.json({ hostname: hostname, uptime: process.uptime(), octoprint_ip: octoprint_ip, octoprint_token: octoprint_token, mqtt_ip: mqtt_ip, shelly_device: shelly_device })  
 })
 
 app.get('/poweroff', function (req, res) {
@@ -79,4 +80,5 @@ process.on('SIGINT', _ => {
 })
 
 console.log('Listening...')
-app.listen(1337)
+app.listen(port)
+

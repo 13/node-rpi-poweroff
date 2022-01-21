@@ -45,7 +45,7 @@
       <div class="card">
         <div id="stream" class="my-0 py-0">
 	  <a href="#" onclick="toggleImg()">
-	    <img src="http://192.168.22.19/webcam/?action=snapshot" id="img-snapshot" class="rounded mx-auto d-block img-fluid" />
+	    <img src="" id="img-snapshot" class="rounded mx-auto d-block img-fluid" />
 	    <div class="card-img-overlay">
 	      <h5 id="img-desc" class="card-title text-end fw-bold text-light">SS</h5>
 	    </div>
@@ -54,7 +54,7 @@
       </div>
       <div class="container">
 	  <div class="row">
-	    <div class="col" id="op-filename">n/a</div>
+	    <div class="col fw-bold" id="op-filename">n/a</div>
 	  </div>
 	  <div class="row">
 	    <div class="col">
@@ -64,31 +64,31 @@
 	    </div>
 	  </div>
 	  <div class="row">
-	    <div class="col">State:</div>
+	    <div class="col text-uppercase">State:</div>
 	    <div class="col" id="op-state">n/a</div>
 	  </div>
 	  <div class="row">
-	    <div class="col">PTL:</div>
+	    <div class="col text-uppercase">PTL:</div>
 	    <div class="col" id="op-ptl">n/a</div>
 	  </div>
 	  <div class="row">
-	    <div class="col">PT:</div>
+	    <div class="col text-uppercase">PT:</div>
 	    <div class="col" id="op-pt">n/a</div>
 	  </div>
 	  <div class="row">
-	    <div class="col">Size:</div>
+	    <div class="col text-uppercase">Size:</div>
 	    <div class="col">
 	      <span id="op-filepos"></span> / <span id="op-filesize"></span>
 	    </div>
 	  </div>
 	  <div class="row">
-	    <div class="col">Tool:</div>
+	    <div class="col text-uppercase">Tool:</div>
 	    <div class="col">
 	      <span id="op-tool"></span>&deg; / <span id="op-toolt"></span>&deg;
 	    </div>
 	  </div>
 	  <div class="row">
-	    <div class="col">Bed:</div>
+	    <div class="col text-uppercase">Bed:</div>
 	    <div class="col">
 	      <span id="op-bed"></span>&deg; / <span id="op-bedt"></span>&deg;
 	    </div>
@@ -167,22 +167,49 @@
     </script>
     <script src="https://unpkg.com/mqtt@4.2.8/dist/mqtt.min.js"></script>
     <script>
+      // API
+      var mqtt_ip;
+      var shelly_device;
+      var octoprint_ip;
+      var octoprint_token;
+      var client; 
+      var subscr;
+      var snapshot;
+      var stream;
+
+      async function getAPI() {
+        const response = await fetch('/api');
+        const api = await response.json();
+	console.log(api);
+        document.title = api.hostname;
+        document.getElementById("hostname").innerHTML = api.hostname;
+	mqtt_ip = api.mqtt_ip;
+	shelly_device = api.shelly_device;
+	octoprint_ip = api.octoprint_ip;
+	octoprint_token = api.octoprint_token;
+	loadOctoJob();
+	loadOctoPrinter();
+	// shelly
+        client = mqtt.connect('ws://' + mqtt_ip);
+        subscr = shelly_device;
+	getShelly();
+	// snapshot
+	snapshot = 'http://' + octoprint_ip + '/webcam/?action=snapshot';
+	stream = 'http://' + octoprint_ip + '/webcam/?action=stream';
+        document.getElementById("img-snapshot").src = snapshot;
+        document.getElementById("img-desc").innerHTML = 'SS';
+      }
+      getAPI();
+
       // shelly
-      var client = mqtt.connect('ws://192.168.22.9:1884')
-      var subscr = 'shellies/shellyplug-s-A33929'
-
       function getShelly() {
-	// /0,/0/power
 	client.subscribe(subscr + '/#')
-
 	client.on('connect', function () {
 	  //console.log('MQTT: connected ...')
 	})
-
 	client.on('disconnect', function () {
 	   //console.log('MQTT: disconnected ...')
 	})
-
 	client.on("message", function (topic, payload) {
 	  if (topic === subscr + '/relay/0') {
 	    //console.log('Status: ' + payload)
@@ -202,7 +229,6 @@
 	  //client.end()
 	})
       }
-      getShelly();
 
       // set shelly relay
       function setShelly() {
@@ -218,21 +244,10 @@
 	}*/
       }
 
-      // hostname
-      async function loadNames() {
-	const response = await fetch('/hostname');
-        const names = await response.json();
-        //console.log(names); 
-        document.title = names.hostname;
-        document.getElementById("hostname").innerHTML = names.hostname;
-        // logs [{ name: 'Joker'}, { name: 'Batman' }]
-      }
-      loadNames();
-
       // toggle image
       async function toggleImg() {
-	var stream = "http://192.168.22.19/webcam/?action=stream";
-	var snapshot = "http://192.168.22.19/webcam/?action=snapshot";
+	var stream = 'http://' + octoprint_ip + '/webcam/?action=stream';
+	var snapshot = 'http://' + octoprint_ip + '/webcam/?action=snapshot';
 	if ((document.getElementById("img-snapshot").src).includes("snapshot")){
           document.getElementById("img-snapshot").src = stream;
           document.getElementById("img-desc").innerHTML = 'LIVE';
@@ -252,7 +267,7 @@
       }
 
       async function loadOctoJob() {
-        const response = await fetch('http://192.168.22.19/api/job?apikey=550F9D415E154377BAECB411C2E0B815');
+        const response = await fetch('http://' + octoprint_ip + '/api/job?apikey=' + octoprint_token)
 	const job = await response.json();
 	//console.log(job); 
 	dayjs.extend(window.dayjs_plugin_duration);
@@ -267,11 +282,10 @@
         document.getElementById("op-pt").innerHTML = dayjs.duration(job.progress.printTime, 's').format('HH:mm:ss');
         document.getElementById("op-ptl").innerHTML = dayjs.duration(job.progress.printTimeLeft, 's').format('HH:mm:ss');
       }
-      loadOctoJob();
       setInterval(loadOctoJob, 10000);
 
       async function loadOctoPrinter() {
-        const response = await fetch('http://192.168.22.19/api/printer?apikey=550F9D415E154377BAECB411C2E0B815');
+        const response = await fetch('http://' + octoprint_ip + '/api/printer?apikey=' + octoprint_token)
 	const printer = await response.json();
 	//console.log(printer); 
         document.getElementById("op-bed").innerHTML = printer.temperature.bed.actual;
@@ -279,8 +293,8 @@
         document.getElementById("op-bedt").innerHTML = printer.temperature.bed.target;
         document.getElementById("op-toolt").innerHTML = printer.temperature.tool0.target;
       }
-      loadOctoPrinter();
       setInterval(loadOctoPrinter, 10000);
+
     </script>	  
   </body>
 </html>
