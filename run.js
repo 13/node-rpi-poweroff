@@ -2,9 +2,9 @@
 
 require('dotenv').config()
 
-const username = process.env.HTTP_USER || 'admin'
-const password = process.env.HTTP_PASS || 'password'
-const port = process.env.HTTP_PORT || '1337'
+const username = process.env.HTTP_USER
+const password = process.env.HTTP_PASS
+const port = process.env.HTTP_PORT
 const octoprint_ip = process.env.OCTOPRINT_SERVER
 const octoprint_token = process.env.OCTOPRINT_TOKEN
 const mqtt_ip = process.env.MQTT_SERVER
@@ -79,6 +79,6 @@ process.on('SIGINT', _ => {
   button.unexport()
 })
 
-console.log('Listening...')
+console.log('Listening... ' + hostname + ':' + port)
 app.listen(port)
 

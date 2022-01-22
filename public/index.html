@@ -54,7 +54,7 @@
       </div>
       <div class="container">
 	  <div class="row">
-	    <div class="col fw-bold" id="op-filename">n/a</div>
+	    <div class="col mt-2 fw-bold text-break" id="op-filename">n/a</div>
 	  </div>
 	  <div class="row">
 	    <div class="col">
@@ -65,7 +65,7 @@
 	  </div>
 	  <div class="row">
 	    <div class="col text-uppercase">State:</div>
-	    <div class="col" id="op-state">n/a</div>
+	    <div class="col fst-italic" id="op-state">n/a</div>
 	  </div>
 	  <div class="row">
 	    <div class="col text-uppercase">PTL:</div>
@@ -78,7 +78,7 @@
 	  <div class="row">
 	    <div class="col text-uppercase">Size:</div>
 	    <div class="col">
-	      <span id="op-filepos"></span> / <span id="op-filesize"></span>
+	      <span id="op-filepos"></span>/<span id="op-filesize"></span>
 	    </div>
 	  </div>
 	  <div class="row">
@@ -187,8 +187,8 @@
 	shelly_device = api.shelly_device;
 	octoprint_ip = api.octoprint_ip;
 	octoprint_token = api.octoprint_token;
-	loadOctoJob();
-	loadOctoPrinter();
+	loadOctoJob(octoprint_ip, octoprint_token);
+	loadOctoPrinter(octoprint_ip, octoprint_token);
 	// shelly
         client = mqtt.connect('ws://' + mqtt_ip);
         subscr = shelly_device;
@@ -259,7 +259,7 @@
 
       // helper function
       function bytesToSize(bytes) {
-	const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+	const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
 	if (bytes === 0) return 'n/a';
 	const i = parseInt(Math.floor(Math.log(Math.abs(bytes)) / Math.log(1024)), 10);
 	if (i === 0) return `${bytes}${sizes[i]}`;
@@ -269,18 +269,18 @@
       async function loadOctoJob() {
         const response = await fetch('http://' + octoprint_ip + '/api/job?apikey=' + octoprint_token)
 	const job = await response.json();
-	//console.log(job); 
+	console.log(job); 
 	dayjs.extend(window.dayjs_plugin_duration);
 	//console.log(dayjs.duration(60, 's').format('HH:mm:ss'));
         document.getElementById("op-filename").innerHTML = job.job.file.name;
-        document.getElementById("op-filesize").innerHTML = bytesToSize(job.job.file.size);
-        document.getElementById("op-filepos").innerHTML = bytesToSize(job.progress.filepos);
-        document.getElementById("op-state").innerHTML = job.state;
+        document.getElementById("op-filepos").innerHTML = (job.progress.filepos == null ? 'n' : bytesToSize(job.progress.filepos));
+        document.getElementById("op-filesize").innerHTML = (job.job.file.size == null ? 'a' : bytesToSize(job.job.file.size));
+        //document.getElementById("op-state").innerHTML = (job.state == null ? 'n/a' : job.state);
         document.getElementById("op-perc").innerHTML = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
         document.getElementById("op-perc").style.width = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
         document.getElementById("op-perc").setAttribute('aria-valuenow',job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10);
-        document.getElementById("op-pt").innerHTML = dayjs.duration(job.progress.printTime, 's').format('HH:mm:ss');
-        document.getElementById("op-ptl").innerHTML = dayjs.duration(job.progress.printTimeLeft, 's').format('HH:mm:ss');
+        document.getElementById("op-pt").innerHTML = (job.progress.printTime == null ? 'n/a' : dayjs.duration(job.progress.printTime, 's').format('HH:mm:ss'));
+        document.getElementById("op-ptl").innerHTML = (job.progress.printTimeLeft == null ? 'n/a' : dayjs.duration(job.progress.printTimeLeft, 's').format('HH:mm:ss'));
       }
       setInterval(loadOctoJob, 10000);
 
@@ -288,6 +288,7 @@
         const response = await fetch('http://' + octoprint_ip + '/api/printer?apikey=' + octoprint_token)
 	const printer = await response.json();
 	//console.log(printer); 
+        document.getElementById("op-state").innerHTML = (printer.state.text == null ? 'n/a' : printer.state.text);
         document.getElementById("op-bed").innerHTML = printer.temperature.bed.actual;
         document.getElementById("op-tool").innerHTML = printer.temperature.tool0.actual;
         document.getElementById("op-bedt").innerHTML = printer.temperature.bed.target;

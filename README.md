@@ -10,6 +10,7 @@ Poweroff & reboot Raspberry Pi over HTTP and button
    * [Prerequisites](#prerequisites)
    * [Installation](#installation)
  * [Usage](#usage)
+ * [Troubleshooting](#troubleshooting)
  * [Roadmap](#roadmap)
  * [Release History](#release-history)
  * [License](#license)
@@ -45,9 +46,16 @@ npm rebuild
 node run.js -t 'show timestamp'
 ```
 
-
 ```sh
 node run.js -t
+```
+
+## Troubleshooting
+
+* Allow port 80 on linux
+
+```sh
+sudo setcap 'cap_net_bind_service=+ep' $(which node)
 ```
  
 ## Roadmap
