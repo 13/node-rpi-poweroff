@@ -266,6 +266,32 @@
         return `${(bytes / (1024 ** i)).toFixed(1)}${sizes[i]}`;
       }
 
+      function countSeconds(time, div, subtract, state) {
+        let startTime = dayjs(time);
+        let endTime = dayjs(time);
+	if (subtract){
+          endTime = dayjs(time).subtract(9, 'second');
+	} else {
+          endTime = dayjs(time).add(9, 'second');
+	}
+	let tmpTime = dayjs(time);
+        console.log('start: ' + dayjs(startTime).format('HH:mm:ss') + ', end: ' + dayjs(endTime).format('HH:mm:ss') + ', tmp: ' + dayjs(tmpTime).format('HH:mm:ss'));
+	if (state == 'Printing'){
+          let interval = setInterval(() => {
+	    if (subtract){
+	      tmpTime = dayjs(tmpTime).subtract(1, 'second');
+	    } else {
+	      tmpTime = dayjs(tmpTime).add(1, 'second');
+	    }
+            document.getElementById(div).innerHTML = dayjs(tmpTime).format('HH:mm:ss');
+            if (dayjs(tmpTime).isSame(dayjs(endTime))) {
+              console.log('clearInterval: ' + interval);
+              clearInterval(interval);
+            }
+          }, 1000);
+	}
+      }
+
       async function loadOctoJob() {
         const response = await fetch('http://' + octoprint_ip + '/api/job?apikey=' + octoprint_token)
 	const job = await response.json();
@@ -275,12 +301,14 @@
         document.getElementById("op-filename").innerHTML = job.job.file.name;
         document.getElementById("op-filepos").innerHTML = (job.progress.filepos == null ? 'n' : bytesToSize(job.progress.filepos));
         document.getElementById("op-filesize").innerHTML = (job.job.file.size == null ? 'a' : bytesToSize(job.job.file.size));
-        //document.getElementById("op-state").innerHTML = (job.state == null ? 'n/a' : job.state);
+        document.getElementById("op-state").innerHTML = (job.state == null ? 'n/a' : job.state);
         document.getElementById("op-perc").innerHTML = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
         document.getElementById("op-perc").style.width = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
         document.getElementById("op-perc").setAttribute('aria-valuenow',job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10);
         document.getElementById("op-pt").innerHTML = (job.progress.printTime == null ? 'n/a' : dayjs.duration(job.progress.printTime, 's').format('HH:mm:ss'));
         document.getElementById("op-ptl").innerHTML = (job.progress.printTimeLeft == null ? 'n/a' : dayjs.duration(job.progress.printTimeLeft, 's').format('HH:mm:ss'));
+	countSeconds((job.progress.printTime == null ? 'n/a' : dayjs.duration(job.progress.printTime, 's').format()),"op-pt", false, (job.state == null ? 'n/a' : job.state));
+	countSeconds((job.progress.printTimeLeft == null ? 'n/a' : dayjs.duration(job.progress.printTimeLeft, 's').format()),"op-ptl", true, (job.state == null ? 'n/a' : job.state));
       }
       setInterval(loadOctoJob, 10000);
 
@@ -288,7 +316,7 @@
         const response = await fetch('http://' + octoprint_ip + '/api/printer?apikey=' + octoprint_token)
 	const printer = await response.json();
 	//console.log(printer); 
-        document.getElementById("op-state").innerHTML = (printer.state.text == null ? 'n/a' : printer.state.text);
+        //document.getElementById("op-state").innerHTML = (printer.state.text == null ? 'n/a' : printer.state.text);
         document.getElementById("op-bed").innerHTML = printer.temperature.bed.actual;
         document.getElementById("op-tool").innerHTML = printer.temperature.tool0.actual;
         document.getElementById("op-bedt").innerHTML = printer.temperature.bed.target;
