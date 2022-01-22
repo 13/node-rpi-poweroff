@@ -9,6 +9,7 @@ Poweroff & reboot Raspberry Pi over HTTP and button
  * [Getting Started](#getting-started)
    * [Prerequisites](#prerequisites)
    * [Installation](#installation)
+   * [Configuration](#configuration)
  * [Usage](#usage)
  * [Troubleshooting](#troubleshooting)
  * [Roadmap](#roadmap)
@@ -40,6 +41,20 @@ npm install
 npm rebuild
 ```
 
+### Configuration
+
+Add .env file
+
+```sh
+HTTP_USER=XXXXX
+HTTP_PASS=XXXXX
+HTTP_PORT=80
+OCTOPRINT_SERVER=192.168.22.19:81
+OCTOPRINT_TOKEN=XXXXX
+MQTT_SERVER=192.168.22.9:1884
+SHELLY_DEVICE=shellies/shellyplug-s-XXXXXX
+```
+
 ## Usage
 
 ```sh
@@ -52,7 +67,7 @@ node run.js -t
 
 ## Troubleshooting
 
-* Allow port 80 on linux
+Allow port 80 on linux
 
 ```sh
 sudo setcap 'cap_net_bind_service=+ep' $(which node)
