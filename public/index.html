@@ -126,26 +126,35 @@
 	//console.log(cmd);
         document.getElementById("res-status").innerHTML = cmd;
 	ev.preventDefault();
-        let response = await fetch("/" + cmd);
+        try {
+          let response = await fetch("/" + cmd);
+	} catch (err) {
+          console.log('doCmd: ' + err);
+	}
       }
     </script>
     <script>
       // check online state of localhost
       async function checkState() {
-        let response = await fetch('/');
-        if (response.status === 200) {
+        try {
+          let response = await fetch('/');
+          if (response.status === 200) {
             let data = await response.text();
             document.getElementById("res-status").innerHTML = 'online';
 	    Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
 	    Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
             document.getElementById("res").className += " alert-success";
-	} else {
+	  } else {
             document.getElementById("res-status").innerHTML = 'offline';
 	    Array.from(document.querySelectorAll('#res.alert-success')).forEach((el) => el.classList.remove('alert-success'));
 	    Array.from(document.querySelectorAll('#res.alert-danger')).forEach((el) => el.classList.remove('alert-danger'));
             document.getElementById("res").className += " alert-danger";
+  	  }
+	} catch (err) {
+            console.log('checkState: ' + err);
 	}
       }
+
       function goCheckState() {
         checkState()
             .then((res) => { 
@@ -179,26 +188,30 @@
       var stream;
 
       async function getAPI() {
-        const response = await fetch('/api');
-        const api = await response.json();
-	//console.log(api);
-        document.title = api.hostname;
-        document.getElementById("hostname").innerHTML = api.hostname;
-	mqtt_ip = api.mqtt_ip;
-	shelly_device = api.shelly_device;
-	octoprint_ip = api.octoprint_ip;
-	octoprint_token = api.octoprint_token;
-	loadOctoJob(octoprint_ip, octoprint_token);
-	loadOctoPrinter(octoprint_ip, octoprint_token);
-	// shelly
-        client = mqtt.connect('ws://' + mqtt_ip);
-        subscr = shelly_device;
-	getShelly();
-	// snapshot
-	snapshot = 'http://' + octoprint_ip + '/webcam/?action=snapshot';
-	stream = 'http://' + octoprint_ip + '/webcam/?action=stream';
-        document.getElementById("img-snapshot").src = snapshot;
-        document.getElementById("img-desc").innerHTML = 'SS';
+        try {
+          const response = await fetch('/api');
+          const api = await response.json();
+	  //console.log(api);
+          document.title = api.hostname;
+          document.getElementById("hostname").innerHTML = api.hostname;
+	  mqtt_ip = api.mqtt_ip;
+	  shelly_device = api.shelly_device;
+	  octoprint_ip = api.octoprint_ip;
+	  octoprint_token = api.octoprint_token;
+	  loadOctoJob(octoprint_ip, octoprint_token);
+	  loadOctoPrinter(octoprint_ip, octoprint_token);
+	  // shelly
+          client = mqtt.connect('ws://' + mqtt_ip);
+          subscr = shelly_device;
+	  getShelly();
+	  // snapshot
+	  snapshot = 'http://' + octoprint_ip + '/webcam/?action=snapshot';
+	  stream = 'http://' + octoprint_ip + '/webcam/?action=stream';
+          document.getElementById("img-snapshot").src = snapshot;
+          document.getElementById("img-desc").innerHTML = 'SS';
+	} catch (err) {
+            console.log('getAPI: ' + err);
+	}
       }
       getAPI();
 
@@ -246,16 +259,27 @@
       }
 
       // toggle image
-      async function toggleImg() {
+      function toggleImg() {
 	var stream = 'http://' + octoprint_ip + '/webcam/?action=stream';
 	var snapshot = 'http://' + octoprint_ip + '/webcam/?action=snapshot';
 	if ((document.getElementById("img-snapshot").src).includes("snapshot")){
           document.getElementById("img-snapshot").src = stream;
           document.getElementById("img-desc").innerHTML = 'LIVE';
 	} else {
-          document.getElementById("img-snapshot").src = snapshot;
+          document.getElementById("img-snapshot").src = snapshot + '&' + new Date().getTime();
           document.getElementById("img-desc").innerHTML = 'SS';
+          //refreshImg();
 	}
+        /*let interval = setInterval(() => {
+	  if ((document.getElementById("img-snapshot").src).includes("stream")){
+	    console.log('ss: clear ' + interval);
+            clearInterval(interval);
+            document.getElementById("img-snapshot").src = snapshot + '&' + new Date().getTime();
+	  } else {
+	    console.log('ss: start ' + interval);
+            document.getElementById("img-snapshot").src = snapshot + '&' + new Date().getTime();
+	  }
+        }, 5000);*/
       }
 
       // helper function
@@ -276,7 +300,7 @@
           endTime = dayjs(time).add(9, 'second');
 	}
 	let tmpTime = dayjs(time);
-        console.log('start: ' + dayjs(startTime).format('HH:mm:ss') + ', end: ' + dayjs(endTime).format('HH:mm:ss') + ', tmp: ' + dayjs(tmpTime).format('HH:mm:ss'));
+        //console.log('start: ' + dayjs(startTime).format('HH:mm:ss') + ', end: ' + dayjs(endTime).format('HH:mm:ss') + ', tmp: ' + dayjs(tmpTime).format('HH:mm:ss'));
         if (state == 'Printing' && dayjs(startTime).isValid() && dayjs(startTime).format('HHmmss') > 0 ){
           let interval = setInterval(() => {
 	    if (subtract){
@@ -286,7 +310,7 @@
 	    }
             document.getElementById(div).innerHTML = dayjs(tmpTime).format('HH:mm:ss');
             if (dayjs(tmpTime).isSame(dayjs(endTime))) {
-              console.log('clearInterval: ' + interval);
+              //console.log('clearInterval: ' + interval);
               clearInterval(interval);
             }
           }, 1000);
@@ -294,36 +318,59 @@
       }
 
       async function loadOctoJob() {
-        const response = await fetch('http://' + octoprint_ip + '/api/job?apikey=' + octoprint_token)
-	const job = await response.json();
-	//console.log(job); 
-	dayjs.extend(window.dayjs_plugin_duration);
-	//console.log(dayjs.duration(60, 's').format('HH:mm:ss'));
-        document.getElementById("op-filename").innerHTML = job.job.file.name;
-        document.getElementById("op-filepos").innerHTML = (job.progress.filepos == null ? 'n' : bytesToSize(job.progress.filepos));
-        document.getElementById("op-filesize").innerHTML = (job.job.file.size == null ? 'a' : bytesToSize(job.job.file.size));
-        document.getElementById("op-state").innerHTML = (job.state == null ? 'n/a' : job.state);
-        document.getElementById("op-perc-text").innerHTML = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
-        document.getElementById("op-perc").style.width = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
-        document.getElementById("op-perc").setAttribute('aria-valuenow',job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10);
-        document.getElementById("op-pt").innerHTML = (job.progress.printTime == null ? 'n/a' : dayjs.duration(job.progress.printTime, 's').format('HH:mm:ss'));
-        document.getElementById("op-ptl").innerHTML = (job.progress.printTimeLeft == null ? 'n/a' : dayjs.duration(job.progress.printTimeLeft, 's').format('HH:mm:ss'));
-	countSeconds((job.progress.printTime == null ? 'n/a' : dayjs.duration(job.progress.printTime, 's').format()),"op-pt", false, (job.state == null ? 'n/a' : job.state));
-	countSeconds((job.progress.printTimeLeft == null ? 'n/a' : dayjs.duration(job.progress.printTimeLeft, 's').format()),"op-ptl", true, (job.state == null ? 'n/a' : job.state));
+	try {
+          const response = await fetch('http://' + octoprint_ip + '/api/job?apikey=' + octoprint_token)
+	  if (!response.ok) { throw new Error(response.statusText);}
+	  const job = await response.json();
+	  //console.log(job); 
+	  dayjs.extend(window.dayjs_plugin_duration);
+	  //console.log(dayjs.duration(60, 's').format('HH:mm:ss'));
+          document.getElementById("op-filename").innerHTML = job.job.file.name;
+          document.getElementById("op-filepos").innerHTML = (job.progress.filepos == null ? 'n' : bytesToSize(job.progress.filepos));
+          document.getElementById("op-filesize").innerHTML = (job.job.file.size == null ? 'a' : bytesToSize(job.job.file.size));
+          document.getElementById("op-state").innerHTML = (job.state == null ? 'n/a' : job.state);
+          document.getElementById("op-perc-text").innerHTML = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
+          document.getElementById("op-perc").style.width = (job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10) + '%';
+          document.getElementById("op-perc").setAttribute('aria-valuenow',job.progress.completion == null ? '0' : Math.round(job.progress.completion*10)/10);
+          document.getElementById("op-pt").innerHTML = (job.progress.printTime == null ? 'n/a' : dayjs.duration(job.progress.printTime, 's').format('HH:mm:ss'));
+          document.getElementById("op-ptl").innerHTML = (job.progress.printTimeLeft == null ? 'n/a' : dayjs.duration(job.progress.printTimeLeft, 's').format('HH:mm:ss'));
+	  countSeconds((job.progress.printTime == null ? 'n/a' : dayjs.duration(job.progress.printTime, 's').format()),"op-pt", false, (job.state == null ? 'n/a' : job.state));
+	  countSeconds((job.progress.printTimeLeft == null ? 'n/a' : dayjs.duration(job.progress.printTimeLeft, 's').format()),"op-ptl", true, (job.state == null ? 'n/a' : job.state));
+	} catch (err) {
+            console.log('loadOctoJob: ' + err);
+	}
       }
       setInterval(loadOctoJob, 10000);
 
       async function loadOctoPrinter() {
-        const response = await fetch('http://' + octoprint_ip + '/api/printer?apikey=' + octoprint_token)
-	const printer = await response.json();
-	//console.log(printer); 
-        //document.getElementById("op-state").innerHTML = (printer.state.text == null ? 'n/a' : printer.state.text);
-        document.getElementById("op-bed").innerHTML = printer.temperature.bed.actual;
-        document.getElementById("op-tool").innerHTML = printer.temperature.tool0.actual;
-        document.getElementById("op-bedt").innerHTML = printer.temperature.bed.target;
-        document.getElementById("op-toolt").innerHTML = printer.temperature.tool0.target;
+	try {
+          const response = await fetch('http://' + octoprint_ip + '/api/printer?apikey=' + octoprint_token)
+	  const printer = await response.json();
+	  //console.log(printer); 
+          //document.getElementById("op-state").innerHTML = (printer.state.text == null ? 'n/a' : printer.state.text);
+          document.getElementById("op-bed").innerHTML = (printer.temperature.bed.actual == null ? 'n/a' : printer.temperature.bed.actual);
+          document.getElementById("op-tool").innerHTML = (printer.temperature.tool0.actual == null ? 'n/a' : printer.temperature.tool0.actual);
+          document.getElementById("op-bedt").innerHTML = (printer.temperature.bed.target == null ? 'n/a' : printer.temperature.bed.target);
+          document.getElementById("op-toolt").innerHTML = (printer.temperature.tool0.target == null ? 'n/a' : printer.temperature.tool0.target);
+	} catch (err) {
+            console.log('loadOctoPrinter: ' + err);
+	}
       }
       setInterval(loadOctoPrinter, 10000);
+
+      /*function refreshImg() {
+	var snapshot = 'http://' + octoprint_ip + '/webcam/?action=snapshot';
+        let interval = setInterval(() => {
+	  if ((document.getElementById("img-snapshot").src).includes("snapshot")){
+	    console.log('ss: start ' + interval);
+            document.getElementById("img-snapshot").src = snapshot + '&' + new Date().getTime();
+          } else {
+	    console.log('ss: clear ' + interval);
+            clearInterval(interval);
+          }
+        }, 5000);
+      }
+      refreshImg();*/
 
     </script>	  
   </body>
