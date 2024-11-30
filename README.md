@@ -1,6 +1,6 @@
 # node-rpi-poweroff
 
-Poweroff & reboot Raspberry Pi over HTTP and button
+API to poweroff & reboot Raspberry Pi over HTTP and hw button press built with Node.js
 
 ## Contents
 
